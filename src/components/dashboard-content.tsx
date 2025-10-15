@@ -55,7 +55,7 @@ export const DashboardContent = () => {
   return (
     <div className="space-y-6 px-8">
       {/* header */}
-      <div>
+      <div className="text-center py-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           Overview of your blockchain certificates and NFTs
@@ -120,28 +120,48 @@ export const DashboardContent = () => {
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border border-border">
-            <Table >
+            <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-muted-foreground">Token ID</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    Token ID
+                  </TableHead>
                   <TableHead className="text-muted-foreground">Name</TableHead>
                   <TableHead className="text-muted-foreground">Owner</TableHead>
-                  <TableHead className="text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    Status
+                  </TableHead>
                   <TableHead className="text-muted-foreground">Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {recentAssets.map((asset) => (
                   <TableRow key={asset.tokenId}>
-                    <TableCell className="font-mono text-primary">{asset.tokenId}</TableCell>
-                    <TableCell className="font-medium text-foreground">{asset.name}</TableCell>
-                    <TableCell className="font-mono text-muted-foreground">{asset.owner}</TableCell>
+                    <TableCell className="font-mono text-primary">
+                      {asset.tokenId}
+                    </TableCell>
+                    <TableCell className="font-medium text-foreground">
+                      {asset.name}
+                    </TableCell>
+                    <TableCell className="font-mono text-muted-foreground">
+                      {asset.owner}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={asset.status === "Verified" ? "default" : asset.status === "Active" ? "secondary" : "outline"}>
+                      <Badge
+                        variant={
+                          asset.status === "Verified"
+                            ? "default"
+                            : asset.status === "Active"
+                            ? "secondary"
+                            : "outline"
+                        }
+                      >
                         {asset.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-muted-foreground">{asset.date}</TableCell>
+                    <TableCell className="font-mono text-muted-foreground">
+                      {asset.date}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

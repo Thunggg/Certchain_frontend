@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/header";
+import { Header } from "@/components/layouts/header";
 import ContextProvider from "@/context";
 import { headers } from "next/headers";
-import { Sidebar } from "@/components/sidebar";
+import { Sidebar } from "@/components/layouts/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,9 +36,9 @@ export default async function RootLayout({
       >
         <div className="flex h-screen overflow-hidden">
           <Sidebar />
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full min-h-0">
             <Header />
-            <main>
+            <main className="flex-1 overflow-y-auto">
               <ContextProvider cookies={cookies}>{children}</ContextProvider>
             </main>
           </div>
