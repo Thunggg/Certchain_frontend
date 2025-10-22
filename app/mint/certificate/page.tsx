@@ -223,14 +223,85 @@ export default function MintPage() {
                         <div className="relative">
                           <div className="group relative h-64 overflow-hidden rounded-lg border">
                             {field.value && (field.value as File).type?.startsWith("image/") && previewUrl ? (
-                              <Image
-                                src={previewUrl}
-                                alt="Preview"
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                unoptimized
-                              />
+                              <>
+                                <Image
+                                  src={previewUrl}
+                                  alt="Preview"
+                                  fill
+                                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                  unoptimized
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100" />
+                                <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={handleThumbnailClick}
+                                    className="h-9 w-9 p-0"
+                                    type="button"
+                                  >
+                                    <Upload className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => {
+                                      handleRemove();
+                                      form.setValue("file", undefined as unknown as File, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                      });
+                                    }}
+                                    className="h-9 w-9 p-0"
+                                    type="button"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </>
+                            ) : field.value && (field.value as File).type === "application/pdf" && previewUrl ? (
+                              <div className="h-full w-full relative">
+                                <iframe
+                                  src={previewUrl + "#toolbar=0"}
+                                  className="h-full w-full"
+                                  title="PDF Preview"
+                                />
+                                <div className="absolute top-2 right-2 flex gap-2 z-10">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={handleThumbnailClick}
+                                    className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                                    type="button"
+                                  >
+                                    <Upload className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => {
+                                      handleRemove();
+                                      form.setValue("file", undefined as unknown as File, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                      });
+                                    }}
+                                    className="h-8 w-8 p-0"
+                                    type="button"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <a 
+                                  href={previewUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="absolute bottom-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded hover:bg-blue-600 z-10"
+                                >
+                                  Mở PDF
+                                </a>
+                              </div>
                             ) : (
                               <div className="flex h-full w-full items-center justify-center bg-black/20">
                                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -239,33 +310,6 @@ export default function MintPage() {
                                 </div>
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100" />
-                            <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                onClick={handleThumbnailClick}
-                                className="h-9 w-9 p-0"
-                                type="button"
-                              >
-                                <Upload className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => {
-                                  handleRemove();
-                                  form.setValue("file", undefined as unknown as File, {
-                                    shouldValidate: true,
-                                    shouldDirty: true,
-                                  });
-                                }}
-                                className="h-9 w-9 p-0"
-                                type="button"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
                           </div>
                           {field.value && (
                             <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
