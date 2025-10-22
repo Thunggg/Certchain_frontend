@@ -28,6 +28,18 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
     [onUpload],
   );
 
+  // New: allow passing a File directly (for drag-and-drop)
+  const handleFileObject = useCallback(
+    (file: File) => {
+      setFileName(file.name);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      previewRef.current = url;
+      onUpload?.(url);
+    },
+    [onUpload]
+  );
+
   const handleRemove = useCallback(() => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -54,6 +66,7 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
     fileInputRef,
     handleThumbnailClick,
     handleFileChange,
+    handleFileObject,
     handleRemove,
   };
 }

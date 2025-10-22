@@ -108,6 +108,7 @@ export default function MintPage() {
     handleThumbnailClick,
     handleFileChange,
     handleRemove,
+    handleFileObject,
   } = useImageUpload();
 
   const [isDragging, setIsDragging] = useState(false);
@@ -136,10 +137,8 @@ export default function MintPage() {
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      const fakeEvent = {
-        target: { files: [file] },
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
-      handleFileChange(fakeEvent);
+      // Use direct File handler from the hook
+      handleFileObject(file);
       form.setValue("file", file as File, {
         shouldValidate: true,
         shouldDirty: true,
