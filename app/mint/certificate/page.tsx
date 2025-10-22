@@ -391,16 +391,24 @@ export default function MintPage() {
             {isPending && <p className="text-sm text-gray-400">Minting...</p>}
             {error && <p className="text-sm text-red-400">{error.message}</p>}
             {data && (
-              <div className="text-xs text-green-400 space-y-1">
-                <p>Minted tokenId: {data.data.tokenId}</p>
-                <a
-                  href={data.data.qrUrl}
-                  className="underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Verify Link
-                </a>
+              <div className="mt-8 p-4 border border-green-500/20 bg-green-500/10 rounded-lg">
+                <h3 className="font-medium text-green-400 mb-2">Mint thành công!</h3>
+                <div className="space-y-2 text-sm">
+                  <p><span className="opacity-70">Token ID:</span> {data.data.tokenId}</p>
+                  <p><span className="opacity-70">Transaction Hash:</span> {data.data.transactionHash}</p>
+                  <div className="mt-4">
+                    <p className="mb-2 opacity-70">QR Code:</p>
+                    {data.data.qrImage && (
+                      <div className="flex justify-center">
+                        <img 
+                          src={data.data.qrImage} 
+                          alt="Certificate NFT QR Code" 
+                          className="max-w-[200px] h-auto"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </form>
