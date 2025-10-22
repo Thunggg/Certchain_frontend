@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMintCertificate } from "@/hooks/useMintCertificate";
 import { useEffect, useState } from "react";
-import toast, { Toaster } from 'react-hot-toast';
 
 const starknetAddress = /^0x[0-9a-fA-F]{1,64}$/;
 const allowedMime = ["application/pdf", "image/png", "image/jpeg"];
@@ -61,9 +60,16 @@ const formSchema = z
       .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
 
     file: z
-      .instanceof(File, { message: "Tệp không hợp lệ" })
-      .refine((f) => allowedMime.includes(f.type), "Chỉ cho phép PDF/PNG/JPG")
-      .refine((f) => f.size <= MAX_FILE_SIZE, "Kích thước tệp tối đa 10MB"),
+      .instanceof(File)
+      .optional() // ✅ Cho phép undefined khi reset
+      .refine(
+        (f) => !f || allowedMime.includes(f.type),
+        "Chỉ cho phép PDF/PNG/JPG"
+      )
+      .refine(
+        (f) => !f || f.size <= MAX_FILE_SIZE,
+        "Kích thước tệp tối đa 10MB"
+      ),
   })
   .superRefine((data, ctx) => {
     if (data.issuerWallet === data.recipientWallet) {
@@ -76,7 +82,6 @@ const formSchema = z
   });
 
 export default function MintPage() {
-
   const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,10 +95,9 @@ export default function MintPage() {
     },
   });
 
-  const { mutate, data, error, isPending } = useMintCertificate();
+  const { mutate, data, error, isPending, isSuccess } = useMintCertificate();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const fileValue = form.watch("file");
 
   useEffect(() => {
@@ -109,164 +113,181 @@ export default function MintPage() {
   // 2. Define a submit handler.
   function onSubmit(values: z.input<typeof formSchema>) {
     try {
-    console.log(values);
-    console.log(values.file.name);
-    setIsLoading(true)
-
-    mutate({ owner: values.issuerWallet, file: values.file });
-
-  } catch (error) {
-    toast.error(error as string)
-  } finally {
-    setIsLoading(false)
-  }
-
+      mutate(
+        { owner: values.issuerWallet, file: values.file as File},
+        {
+          onSuccess: () => {
+            // Reset form fields to initial state
+            form.reset();
+            // Clear file value explicitly and preview
+            form.setValue("file", undefined as unknown as File, {
+              shouldValidate: true,
+              shouldDirty: false,
+            });
+            setPreviewUrl(null);
+          },
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
     <div className="min-h-[calc(100vh-var(--nav-h))] flex items-start md:items-center justify-center px-4 py-8 md:py-12">
       <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl shadow-lg p-6 md:p-8">
         <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <FormField
-          control={form.control}
-          name="file"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Certificate File (PDF/PNG/JPG, ≤ 10MB)</FormLabel>
-              <FormControl>
-                <input
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    form.setValue("file", f as File, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                  }}
-                />
-              </FormControl>
-              {field.value && (
-                <p className="text-xs text-gray-400">
-                  {field.value.name} —{" "}
-                  {(field.value.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <FormField
+              control={form.control}
+              name="file"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Certificate File (PDF/PNG/JPG, ≤ 10MB)</FormLabel>
+                  <FormControl>
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        form.setValue("file", f as File, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                  </FormControl>
+                  {field.value && (
+                    <p className="text-xs text-gray-400">
+                      {field.value.name} —{" "}
+                      {(field.value.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  )}
+                  {previewUrl && (
+                    <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full h-56 object-contain bg-black/40"
+                      />
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
               )}
-              {previewUrl && (
-                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/20">
-                  <img src={previewUrl} alt="Preview" className="w-full h-56 object-contain bg-black/40" />
-                </div>
+            />
+
+            <FormField
+              control={form.control}
+              name="certificateName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Certificate Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            />
 
-        <FormField
-          control={form.control}
-          name="certificateName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Certificate Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="issueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Issue Date</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      value={String(field.value ?? "")}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="issueDate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Issue Date</FormLabel>
-              <FormControl>
-                <Input
-                  type="date"
-                  value={String(field.value ?? "")}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  name={field.name}
-                  ref={field.ref}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="issuerName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Issuer Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="issuerName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Issuer Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="issuerWallet"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Issuer Wallet</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="issuerWallet"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Issuer Wallet</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="recipientWallet"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Recipient Wallet</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="recipientWallet"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Recipient Wallet</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button disabled={isLoading} type="submit" className="w-full">
-          {isLoading ? "Đang xử lý..." : "Mint Certificate"}
-        </Button>
-        {isPending && <p className="text-sm text-gray-400">Minting...</p>}
-        {error && <p className="text-sm text-red-400">{error.message}</p>}
-        {data && (
-          <div className="text-xs text-green-400 space-y-1">
-            <p>Minted tokenId: {data.data.tokenId}</p>
-            <a href={data.data.qrUrl} className="underline" target="_blank" rel="noreferrer">Verify Link</a>
-          </div>
-        )}
-      </form>
-    </Form>
+            <Button disabled={isPending} type="submit" className="w-full">
+              {isPending ? "Đang xử lý..." : "Mint Certificate"}
+            </Button>
+            {isPending && <p className="text-sm text-gray-400">Minting...</p>}
+            {error && <p className="text-sm text-red-400">{error.message}</p>}
+            {data && (
+              <div className="text-xs text-green-400 space-y-1">
+                <p>Minted tokenId: {data.data.tokenId}</p>
+                <a
+                  href={data.data.qrUrl}
+                  className="underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Verify Link
+                </a>
+              </div>
+            )}
+          </form>
+        </Form>
       </div>
     </div>
   );

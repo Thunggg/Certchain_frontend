@@ -11,11 +11,17 @@ export function useMintCertificate(defaultBaseUrl = 'http://localhost:3000/api')
     mutationFn: async ({ baseUrl = defaultBaseUrl, owner, file }) => {
       return await mintCertificateApi(baseUrl, owner, file);
     },
-    onSuccess: (data) => {
-      toast.success("Minted successfully 🎉")
+    onSuccess: () => {
+      toast.success("Minted successfully 🎉", {
+        duration: 5000,
+        position: "top-right",
+      })
     },
     onError: (error) => {
-      toast.error(error.message)
+      toast.error(error.message, {
+        duration: 8000,
+        position: "top-right",
+      })
     },
   });
 }
