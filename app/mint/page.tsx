@@ -14,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMintCertificate } from "@/hooks/useMintCertificate";
+import { useEffect, useState } from "react";
+import toast, { Toaster } from 'react-hot-toast';
 
 const starknetAddress = /^0x[0-9a-fA-F]{1,64}$/;
 const allowedMime = ["application/pdf", "image/png", "image/jpeg"];
@@ -74,7 +76,7 @@ const formSchema = z
   });
 
 export default function MintPage() {
-  // 1. Define your form.
+
   const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,13 +92,41 @@ export default function MintPage() {
 
   const { mutate, data, error, isPending } = useMintCertificate();
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const fileValue = form.watch("file");
+
+  useEffect(() => {
+    const f = fileValue as File | undefined;
+    if (f && f.type?.startsWith("image/")) {
+      const url = URL.createObjectURL(f);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setPreviewUrl(null);
+  }, [fileValue]);
+
   // 2. Define a submit handler.
   function onSubmit(values: z.input<typeof formSchema>) {
-    mutate({ owner: values.issuerWallet, file: values.file.name });
+    try {
+    console.log(values);
+    console.log(values.file.name);
+    setIsLoading(true)
+
+    mutate({ owner: values.issuerWallet, file: values.file });
+
+  } catch (error) {
+    toast.error(error as string)
+  } finally {
+    setIsLoading(false)
+  }
+
   }
 
   return (
-    <Form {...form}>
+    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-start md:items-center justify-center px-4 py-8 md:py-12">
+      <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl shadow-lg p-6 md:p-8">
+        <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <FormField
           control={form.control}
@@ -123,6 +153,11 @@ export default function MintPage() {
                   {(field.value.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               )}
+              {previewUrl && (
+                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+                  <img src={previewUrl} alt="Preview" className="w-full h-56 object-contain bg-black/40" />
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -135,7 +170,7 @@ export default function MintPage() {
             <FormItem>
               <FormLabel>Certificate Name</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -149,7 +184,7 @@ export default function MintPage() {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -184,7 +219,7 @@ export default function MintPage() {
             <FormItem>
               <FormLabel>Issuer Name</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -198,7 +233,7 @@ export default function MintPage() {
             <FormItem>
               <FormLabel>Issuer Wallet</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -212,14 +247,16 @@ export default function MintPage() {
             <FormItem>
               <FormLabel>Recipient Wallet</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit">Submit</Button>
+        <Button disabled={isLoading} type="submit" className="w-full">
+          {isLoading ? "Đang xử lý..." : "Mint Certificate"}
+        </Button>
         {isPending && <p className="text-sm text-gray-400">Minting...</p>}
         {error && <p className="text-sm text-red-400">{error.message}</p>}
         {data && (
@@ -230,5 +267,7 @@ export default function MintPage() {
         )}
       </form>
     </Form>
+      </div>
+    </div>
   );
 }

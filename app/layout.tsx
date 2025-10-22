@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/navigation/Navbar";
 import { siteNavItems } from "@/components/navigation/nav-items";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +32,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          <Navbar items={siteNavItems} cta={{ label: 'Start Free Trial', href: '#' }} />
-          <div style={{ height: 'var(--nav-h)' }} />
+          <Navbar
+            items={siteNavItems}
+            cta={{ label: "Start Free Trial", href: "#" }}
+          />
+          <div style={{ height: "var(--nav-h)" }} />
           <main>
             {children}
+            <Toaster position="top-right" />
           </main>
         </QueryProvider>
       </body>

@@ -22,7 +22,7 @@ export type ApiError = {
   errors?: Array<{ field?: string; message: string; value?: unknown }>;
 };
 
-export async function mintCertificateApi(baseUrl: string, owner: string, file: string, signal?: AbortSignal): Promise<MintResponse> {
+export async function mintCertificateApi(baseUrl: string, owner: string, file: File, signal?: AbortSignal): Promise<MintResponse> {
   const formData = new FormData();
   formData.append('owner', owner);
   formData.append('file', file);
@@ -41,7 +41,7 @@ export async function mintCertificateApi(baseUrl: string, owner: string, file: s
     const err = json as ApiError;
     throw new Error(err?.message || `HTTP ${res.status}`);
   }
-  
+
   return json as MintResponse;
 }
 
