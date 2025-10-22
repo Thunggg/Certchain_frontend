@@ -1,70 +1,77 @@
-'use client'
+"use client";
 
-import * as z from "zod"; 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useMintCertificate } from "@/hooks/useMintCertificate";
 
 const starknetAddress = /^0x[0-9a-fA-F]{1,64}$/;
 const allowedMime = ["application/pdf", "image/png", "image/jpeg"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 // const MIN_DATE = new Date("2000-01-01");
 
-const formSchema = z.object({
-  certificateName: z
-  .string()
-  .trim()
-  .min(3, "Tên chứng chỉ quá ngắn")
-  .max(100, "Tên chứng chỉ quá dài")
-  .refine((s) => /\S/.test(s), "Không được chỉ toàn khoảng trắng"),
-    
-  description: z
-    .string()
-    .trim()
-    .min(10, "Mô tả quá ngắn")
-    .max(500, "Mô tả quá dài"),
+const formSchema = z
+  .object({
+    certificateName: z
+      .string()
+      .trim()
+      .min(3, "Tên chứng chỉ quá ngắn")
+      .max(100, "Tên chứng chỉ quá dài")
+      .refine((s) => /\S/.test(s), "Không được chỉ toàn khoảng trắng"),
 
-  issueDate: z
-    .coerce
-    .date()
-    .min(new Date("2000-01-01"), "Ngày phát hành không hợp lệ")
-    .refine((d) => d <= new Date(), "Ngày phát hành không được ở tương lai"),
+    description: z
+      .string()
+      .trim()
+      .min(10, "Mô tả quá ngắn")
+      .max(500, "Mô tả quá dài"),
 
+    issueDate: z.coerce
+      .date()
+      .min(new Date("2000-01-01"), "Ngày phát hành không hợp lệ")
+      .refine((d) => d <= new Date(), "Ngày phát hành không được ở tương lai"),
 
-  issuerName: z
-    .string()
-    .trim()
-    .min(2, "Tên tổ chức quá ngắn")
-    .max(100, "Tên tổ chức quá dài"),
+    issuerName: z
+      .string()
+      .trim()
+      .min(2, "Tên tổ chức quá ngắn")
+      .max(100, "Tên tổ chức quá dài"),
 
-  issuerWallet: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
+    issuerWallet: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
 
-  recipientWallet: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
+    recipientWallet: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
 
-  file: z
-    .instanceof(File, { message: "Tệp không hợp lệ" })
-    .refine((f) => allowedMime.includes(f.type), "Chỉ cho phép PDF/PNG/JPG")
-    .refine((f) => f.size <= MAX_FILE_SIZE, "Kích thước tệp tối đa 10MB"),
-})
-.superRefine((data, ctx) => {
-  if (data.issuerWallet === data.recipientWallet) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Ví người nhận phải khác ví người phát hành",
-      path: ["recipientWallet"],
-    })
-  }
-})
+    file: z
+      .instanceof(File, { message: "Tệp không hợp lệ" })
+      .refine((f) => allowedMime.includes(f.type), "Chỉ cho phép PDF/PNG/JPG")
+      .refine((f) => f.size <= MAX_FILE_SIZE, "Kích thước tệp tối đa 10MB"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.issuerWallet === data.recipientWallet) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Ví người nhận phải khác ví người phát hành",
+        path: ["recipientWallet"],
+      });
+    }
+  });
 
 export default function MintPage() {
   // 1. Define your form.
@@ -79,21 +86,48 @@ export default function MintPage() {
       recipientWallet: "",
       file: new File([], "example.pdf"),
     },
-  })
- 
+  });
+
+  const { mutate, data, error, isPending } = useMintCertificate();
+
   // 2. Define a submit handler.
   function onSubmit(values: z.input<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    alert("Form submitted successfully")
-    console.log(values)
+    mutate({ owner: values.issuerWallet, file: values.file.name });
   }
-
 
   return (
     <Form {...form}>
-
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <FormField
+          control={form.control}
+          name="file"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Certificate File (PDF/PNG/JPG, ≤ 10MB)</FormLabel>
+              <FormControl>
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    form.setValue("file", f as File, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                />
+              </FormControl>
+              {field.value && (
+                <p className="text-xs text-gray-400">
+                  {field.value.name} —{" "}
+                  {(field.value.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="certificateName"
@@ -122,7 +156,6 @@ export default function MintPage() {
           )}
         />
 
-
         <FormField
           control={form.control}
           name="issueDate"
@@ -130,7 +163,14 @@ export default function MintPage() {
             <FormItem>
               <FormLabel>Issue Date</FormLabel>
               <FormControl>
-                <Input type="date" value={String(field.value ?? "")} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+                <Input
+                  type="date"
+                  value={String(field.value ?? "")}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -180,7 +220,15 @@ export default function MintPage() {
         />
 
         <Button type="submit">Submit</Button>
+        {isPending && <p className="text-sm text-gray-400">Minting...</p>}
+        {error && <p className="text-sm text-red-400">{error.message}</p>}
+        {data && (
+          <div className="text-xs text-green-400 space-y-1">
+            <p>Minted tokenId: {data.data.tokenId}</p>
+            <a href={data.data.qrUrl} className="underline" target="_blank" rel="noreferrer">Verify Link</a>
+          </div>
+        )}
       </form>
     </Form>
-  )
+  );
 }

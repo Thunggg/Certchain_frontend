@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navigation/Navbar";
 import { siteNavItems } from "@/components/navigation/nav-items";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,11 +30,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar items={siteNavItems} cta={{ label: 'Start Free Trial', href: '#' }} />
-        <div style={{ height: 'var(--nav-h)' }} />
-        <main>
-          {children}
-        </main>
+        <QueryProvider>
+          <Navbar items={siteNavItems} cta={{ label: 'Start Free Trial', href: '#' }} />
+          <div style={{ height: 'var(--nav-h)' }} />
+          <main>
+            {children}
+          </main>
+        </QueryProvider>
       </body>
     </html>
   );
