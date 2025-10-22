@@ -14,7 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMintCertificate } from "@/hooks/useMintCertificate";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useImageUpload } from "@/components/use-image-upload"
+import { ImagePlus, X, Upload, Trash2, FileText } from "lucide-react"
+import Image from "next/image"
+import { cn } from "@/lib/utils"
 
 const starknetAddress = /^0x[0-9a-fA-F]{1,64}$/;
 const allowedMime = ["application/pdf", "image/png", "image/jpeg"];
@@ -91,24 +95,57 @@ export default function MintPage() {
       issuerName: "",
       issuerWallet: "",
       recipientWallet: "",
-      file: new File([], "example.pdf"),
+      file: undefined,
     },
   });
 
-  const { mutate, data, error, isPending, isSuccess } = useMintCertificate();
+  const { mutate, data, error, isPending } = useMintCertificate();
 
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const fileValue = form.watch("file");
+  const {
+    previewUrl,
+    fileName,
+    fileInputRef,
+    handleThumbnailClick,
+    handleFileChange,
+    handleRemove,
+  } = useImageUpload();
 
-  useEffect(() => {
-    const f = fileValue as File | undefined;
-    if (f && f.type?.startsWith("image/")) {
-      const url = URL.createObjectURL(f);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
+  const [isDragging, setIsDragging] = useState(false);
+  // Removed unused watcher: fileValue
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const fakeEvent = {
+        target: { files: [file] },
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleFileChange(fakeEvent);
+      form.setValue("file", file as File, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
-    setPreviewUrl(null);
-  }, [fileValue]);
+  };
 
   // 2. Define a submit handler.
   function onSubmit(values: z.input<typeof formSchema>) {
@@ -124,7 +161,7 @@ export default function MintPage() {
               shouldValidate: true,
               shouldDirty: false,
             });
-            setPreviewUrl(null);
+            handleRemove();
           },
         }
       );
@@ -145,33 +182,114 @@ export default function MintPage() {
                 <FormItem>
                   <FormLabel>Certificate File (PDF/PNG/JPG, ≤ 10MB)</FormLabel>
                   <FormControl>
-                    <input
-                      type="file"
-                      accept=".pdf,.png,.jpg,.jpeg"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        form.setValue("file", f as File, {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                        });
-                      }}
-                    />
-                  </FormControl>
-                  {field.value && (
-                    <p className="text-xs text-gray-400">
-                      {field.value.name} —{" "}
-                      {(field.value.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  )}
-                  {previewUrl && (
-                    <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/20">
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="w-full h-56 object-contain bg-black/40"
+                    <div>
+                      <Input
+                        type="file"
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={(e) => {
+                          handleFileChange(e);
+                          const f = e.target.files?.[0];
+                          form.setValue("file", f as File, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        }}
                       />
-                    </div>
-                  )}
+
+                      {!previewUrl && !field.value ? (
+                        <div
+                          onClick={handleThumbnailClick}
+                          onDragOver={handleDragOver}
+                          onDragEnter={handleDragEnter}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          className={cn(
+                            "flex h-64 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 transition-colors hover:bg-muted",
+                            isDragging && "border-primary/50 bg-primary/5",
+                          )}
+                        >
+                          <div className="rounded-full bg-background p-3 shadow-sm">
+                            <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm font-medium">Click to select</p>
+                            <p className="text-xs text-muted-foreground">
+                              or drag and drop file here
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <div className="group relative h-64 overflow-hidden rounded-lg border">
+                            {field.value && (field.value as File).type?.startsWith("image/") && previewUrl ? (
+                              <Image
+                                src={previewUrl}
+                                alt="Preview"
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-black/20">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <FileText className="h-5 w-5" />
+                                  <span className="text-sm">PDF selected</span>
+                                </div>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100" />
+                            <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={handleThumbnailClick}
+                                className="h-9 w-9 p-0"
+                                type="button"
+                              >
+                                <Upload className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  handleRemove();
+                                  form.setValue("file", undefined as unknown as File, {
+                                    shouldValidate: true,
+                                    shouldDirty: true,
+                                  });
+                                }}
+                                className="h-9 w-9 p-0"
+                                type="button"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          {field.value && (
+                            <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                              <span className="truncate">{(field.value as File).name}</span>
+                              <button
+                                onClick={() => {
+                                  handleRemove();
+                                  form.setValue("file", undefined as unknown as File, {
+                                    shouldValidate: true,
+                                    shouldDirty: true,
+                                  });
+                                }}
+                                className="ml-auto rounded-full p-1 hover:bg-muted"
+                                type="button"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                     </div>
+                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
