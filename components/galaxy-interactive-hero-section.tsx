@@ -5,7 +5,7 @@ import React, { useRef } from 'react';
 // Navbar is global; no per-page import here
 import { SplineBackground } from '@/components/backgrounds/SplineBackground'
 import { ScreenshotFrame } from '@/components/media/ScreenshotFrame'
-import { useHeroScrollEffect } from '@/hooks/useHeroScrollEffect'
+import { useHeroScrollEffect } from '@/hooks/use-hero-scroll-effect'
 
 
 function HeroSplineBackground() {

@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMintCertificate } from "@/hooks/useMintCertificate";
+import { useMintCertificate } from "@/hooks/use-mint-certificate";
 import { useState } from "react";
-import { useImageUpload } from "@/components/use-image-upload"
+import { useImageUpload } from "@/hooks/use-image-upload"
 import { ImagePlus, X, Upload, Trash2, FileText } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 
-const starknetAddress = /^0x[0-9a-fA-F]{1,64}$/;
+const evmAddress = /^0x[0-9a-fA-F]{40}$/;
 const allowedMime = ["application/pdf", "image/png", "image/jpeg"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 // const MIN_DATE = new Date("2000-01-01");
@@ -55,13 +55,13 @@ const formSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
+      .regex(evmAddress, "Địa chỉ ví EVM không hợp lệ"),
 
     recipientWallet: z
       .string()
       .trim()
       .toLowerCase()
-      .regex(starknetAddress, "Địa chỉ Starknet không hợp lệ"),
+      .regex(evmAddress, "Địa chỉ ví EVM không hợp lệ"),
 
     file: z
       .instanceof(File)
@@ -112,7 +112,6 @@ export default function MintPage() {
   } = useImageUpload();
 
   const [isDragging, setIsDragging] = useState(false);
-  // Removed unused watcher: fileValue
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -444,9 +443,9 @@ export default function MintPage() {
                     <p className="mb-2 opacity-70">QR Code:</p>
                     {data.data.qrImage && (
                       <div className="flex justify-center">
-                        <img 
-                          src={data.data.qrImage} 
-                          alt="Certificate NFT QR Code" 
+                        <img
+                          src={data.data.qrImage}
+                          alt="Certificate NFT QR Code"
                           className="max-w-[200px] h-auto"
                         />
                       </div>

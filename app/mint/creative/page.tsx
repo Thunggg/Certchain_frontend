@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMintCreative } from "@/hooks/useMintCreative";
+import { useMintCreative } from "@/hooks/use-mint-creative";
 import { useState } from "react";
-import { useImageUpload } from "@/components/use-image-upload";
+import { useImageUpload } from "@/hooks/use-image-upload";
 import { ImagePlus, X, Upload, Trash2, FileText } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";

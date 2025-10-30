@@ -14,11 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useImageUpload } from "@/components/use-image-upload";
+import { useImageUpload } from "@/hooks/use-image-upload";
 import { ImagePlus, Upload, Trash2, QrCode, FileText, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useCertificateVerify } from "@/hooks/useCertificateVerify";
+import { useCertificateVerify } from "@/hooks/use-certificate-verify";
 
 const allowedMime = ["application/pdf", "image/png", "image/jpeg"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

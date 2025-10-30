@@ -45,6 +45,36 @@ export async function mintCertificateApi(baseUrl: string, owner: string, file: F
   return json as MintResponse;
 }
 
+export async function mintCreativeApi(
+  baseUrl: string,
+  owner: string,
+  issuerName: string,
+  file: File,
+  signal?: AbortSignal,
+): Promise<MintResponse> {
+  const formData = new FormData();
+  formData.append('owner', owner);
+  formData.append('issuerName', issuerName);
+  formData.append('file', file);
+
+  const res = await fetch(`${baseUrl}/creative/mint`, {
+    method: 'POST',
+    body: formData,
+    signal,
+  });
+
+  const text = await res.text();
+  let json: unknown;
+  try { json = text ? JSON.parse(text) : {}; } catch { throw new Error('Invalid JSON response'); }
+
+  if (!res.ok) {
+    const err = json as ApiError;
+    throw new Error(err?.message || `HTTP ${res.status}`);
+  }
+
+  return json as MintResponse;
+}
+
 export type VerifyByFileResponse = {
   code: number;
   message: string;

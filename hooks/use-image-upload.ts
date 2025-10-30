@@ -9,7 +9,7 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-    
+
   const handleThumbnailClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
