@@ -148,8 +148,18 @@ export default function MintPage() {
   // 2. Define a submit handler.
   function onSubmit(values: z.input<typeof formSchema>) {
     try {
+      const issueDateValue = values.issueDate as unknown;
+      const issueDateISO = issueDateValue instanceof Date ? issueDateValue.toISOString() : String(issueDateValue ?? '');
       mutate(
-        { owner: values.issuerWallet, file: values.file as File, recipientWallet: values.recipientWallet },
+        {
+          owner: values.issuerWallet,
+          file: values.file as File,
+          recipientWallet: values.recipientWallet,
+          issuerName: values.issuerName,
+          certificateName: values.certificateName,
+          description: values.description,
+          issueDate: issueDateISO,
+        },
         {
           onSuccess: () => {
             // Reset form fields to initial state

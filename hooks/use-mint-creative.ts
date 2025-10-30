@@ -35,8 +35,8 @@ export function useMintCreative() {
         throw new Error('Vui lòng nhập địa chỉ ví');
       }
 
-      // Gửi đúng endpoint creative với issuerName (map từ ownerName)
-      return await mintCreativeApi(baseUrl, owner, ownerName, file);
+      // Gửi đúng endpoint creative với issuerName (map từ ownerName) kèm title/description
+      return await mintCreativeApi(baseUrl, owner, ownerName, file, title, description);
     },
     onSuccess: (data) => {
       toast.success('Mint creative NFT thành công!');

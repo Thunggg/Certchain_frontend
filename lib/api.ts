@@ -27,6 +27,10 @@ export async function mintCertificateApi(
   owner: string,
   file: File,
   recipientWallet?: string,
+  issuerName?: string,
+  certificateName?: string,
+  description?: string,
+  issueDate?: string,
   signal?: AbortSignal,
 ): Promise<MintResponse> {
   const formData = new FormData();
@@ -35,6 +39,10 @@ export async function mintCertificateApi(
   if (recipientWallet) {
     formData.append('recipientWallet', recipientWallet);
   }
+  if (issuerName) formData.append('issuerName', issuerName);
+  if (certificateName) formData.append('certificateName', certificateName);
+  if (description) formData.append('description', description);
+  if (issueDate) formData.append('issueDate', issueDate);
 
   const res = await fetch(`${baseUrl}/certificate/mint`, {
     method: 'POST',
@@ -59,12 +67,16 @@ export async function mintCreativeApi(
   owner: string,
   issuerName: string,
   file: File,
+  title?: string,
+  description?: string,
   signal?: AbortSignal,
 ): Promise<MintResponse> {
   const formData = new FormData();
   formData.append('owner', owner);
   formData.append('issuerName', issuerName);
   formData.append('file', file);
+  if (title) formData.append('title', title);
+  if (description) formData.append('description', description);
 
   const res = await fetch(`${baseUrl}/creative/mint`, {
     method: 'POST',

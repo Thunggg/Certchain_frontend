@@ -4,12 +4,21 @@ import { useMutation } from '@tanstack/react-query';
 import { mintCertificateApi, type MintResponse } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-type Vars = { baseUrl?: string; owner: string; file: File; recipientWallet?: string };
+type Vars = {
+  baseUrl?: string;
+  owner: string;
+  file: File;
+  recipientWallet?: string;
+  issuerName?: string;
+  certificateName?: string;
+  description?: string;
+  issueDate?: string;
+};
 
 export function useMintCertificate(defaultBaseUrl = 'http://localhost:3000/api') {
   return useMutation<MintResponse, Error, Vars>({
-    mutationFn: async ({ baseUrl = defaultBaseUrl, owner, file, recipientWallet }) => {
-      return await mintCertificateApi(baseUrl, owner, file, recipientWallet);
+    mutationFn: async ({ baseUrl = defaultBaseUrl, owner, file, recipientWallet, issuerName, certificateName, description, issueDate }) => {
+      return await mintCertificateApi(baseUrl, owner, file, recipientWallet, issuerName, certificateName, description, issueDate);
     },
     onSuccess: () => {
       toast.success("Minted successfully 🎉", {
