@@ -22,10 +22,19 @@ export type ApiError = {
   errors?: Array<{ field?: string; message: string; value?: unknown }>;
 };
 
-export async function mintCertificateApi(baseUrl: string, owner: string, file: File, signal?: AbortSignal): Promise<MintResponse> {
+export async function mintCertificateApi(
+  baseUrl: string,
+  owner: string,
+  file: File,
+  recipientWallet?: string,
+  signal?: AbortSignal,
+): Promise<MintResponse> {
   const formData = new FormData();
   formData.append('owner', owner);
   formData.append('file', file);
+  if (recipientWallet) {
+    formData.append('recipientWallet', recipientWallet);
+  }
 
   const res = await fetch(`${baseUrl}/certificate/mint`, {
     method: 'POST',

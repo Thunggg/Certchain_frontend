@@ -149,7 +149,7 @@ export default function MintPage() {
   function onSubmit(values: z.input<typeof formSchema>) {
     try {
       mutate(
-        { owner: values.issuerWallet, file: values.file as File},
+        { owner: values.issuerWallet, file: values.file as File, recipientWallet: values.recipientWallet },
         {
           onSuccess: () => {
             // Reset form fields to initial state
