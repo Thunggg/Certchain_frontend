@@ -179,7 +179,7 @@ export default function MintPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-start md:items-center justify-center px-4 py-8 md:py-12">
+    <div className="min-h-screen flex items-start md:items-center justify-center px-4 py-8 md:py-12">
       <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl shadow-lg p-6 md:p-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
