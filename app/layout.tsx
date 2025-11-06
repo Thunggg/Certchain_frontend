@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navigation/Navbar";
-import { siteNavItems } from "@/components/navigation/nav-items";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Toaster } from "react-hot-toast";
 
@@ -32,15 +32,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          <Navbar
-            items={siteNavItems}
-            cta={{ label: "Start Free Trial", href: "#" }}
-          />
-          <div style={{ height: "var(--nav-h)" }} />
+          <Header />
           <main>
             {children}
             <Toaster position="top-right" />
           </main>
+          <Footer />
         </QueryProvider>
       </body>
     </html>

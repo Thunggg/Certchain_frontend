@@ -14,20 +14,24 @@ export function Header() {
             <span className="font-bold text-lg">Certichain</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition">
-              About
+            <div className="relative group">
+              <span className="text-muted-foreground hover:text-foreground transition cursor-pointer">
+                Mint
+              </span>
+              <div className="absolute left-0 mt-2 w-48 bg-card rounded-md shadow-lg py-2 border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <Link href="/mint/certificate" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition">
+                  Mint Certificate
+                </Link>
+                <Link href="/mint/creative" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition">
+                  Mint Creative
+                </Link>
+              </div>
+            </div>
+            <Link href="/verify/certificate" className="text-muted-foreground hover:text-foreground transition">
+              Verify
             </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition">
-              Features
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition">
-              Overview
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition">
-              Community
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition">
-              Blog
+            <Link href="/marketplace" className="text-muted-foreground hover:text-foreground transition">
+              Marketplace
             </Link>
           </nav>
         </div>
