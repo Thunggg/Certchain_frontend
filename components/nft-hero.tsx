@@ -12,7 +12,7 @@ export function NFTHero({ image, title, creator, verified }: NFTHeroProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
       <div className="relative">
         <div className="aspect-square rounded-2xl overflow-hidden gradient-purple-cyan p-1">
-          <img src={image || "/placeholder.svg"} alt={title} className="w-full h-full object-cover rounded-xl" />
+          <img src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTc_WJ2y0-TuH9gIYtV8Kh_tMpi0-a9YzxZM79PaiAxS5vCMxsm2hTmQSqX6a81M33wu44&usqp=CAU"} alt={title} className="w-full h-full object-cover rounded-xl" />
         </div>
       </div>
       <div className="space-y-6">

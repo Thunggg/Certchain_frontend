@@ -17,7 +17,7 @@ export function NFTCard({ id, title, image, price, creator }: NFTCardProps) {
       <div className="group cursor-pointer">
         <div className="relative overflow-hidden rounded-lg mb-4 aspect-square">
           <img
-            src={image || "/placeholder.svg"}
+            src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTc_WJ2y0-TuH9gIYtV8Kh_tMpi0-a9YzxZM79PaiAxS5vCMxsm2hTmQSqX6a81M33wu44&usqp=CAU"}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
           />
